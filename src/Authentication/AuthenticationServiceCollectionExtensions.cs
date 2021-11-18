@@ -36,6 +36,7 @@ public static class AuthenticationServiceCollectionExtensions
             .AddHttpContextAccessor()
             .AddLogging();
 
+        services.AddSingleton(options => new AuthenticationOptions());
         services.Configure(configure);
 
         if (!services.Any(x => x.ServiceType == typeof(AuthenticationOptions)))
