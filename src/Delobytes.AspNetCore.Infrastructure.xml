@@ -4,6 +4,18 @@
         <name>Delobytes.AspNetCore.Infrastructure</name>
     </assembly>
     <members>
+        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions">
+            <summary>
+            Методы расширения.
+            </summary>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions.UseAuth0Authentication(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary>
+            Добавляет аутентификацию веб-АПИ приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
+            </summary>
+            <param name="app"></param>
+            <returns></returns>
+        </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler">
             <summary>
             Обработчик аутентификации АПИ-запроса.
@@ -119,14 +131,13 @@
             Расширения <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> для регистрации сервисов.
             </summary>
         </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddOidcAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Action{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddAuth0Authentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.Action{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
             <summary>
-            Добавляет в <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> и конвейер всё необходимое для аутентификации
-            веб-АПИ приложения на базе OAuth2 (OpenID Connect) и JWT-токенов.
-            Включает кастомный обработчик <see cref="T:Microsoft.AspNetCore.Authentication.IAuthenticationHandler"/> и обновление ключей шифрования токенов.
+            Добавляет в <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> всё необходимое для аутентификации на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
             </summary>
             <param name="services"><see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> в которую нужно добавить аутентификацию.</param>
             <param name="oidcProviderIssuer">Адрес OpenID-совместимого (OIDC) OAuth2-провайдера, откуда следует забирать обновляемые ключи шифрования JWT-токенов.</param>
+            <param name="authSchemeName">Название схемы аутентификации.</param>
             <param name="configure"><see cref="T:System.Action`1"/> для настройки <see cref="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions"/>.</param>
             <returns>Ссылка на этот экземпляр после завершения операции.</returns>
         </member>
