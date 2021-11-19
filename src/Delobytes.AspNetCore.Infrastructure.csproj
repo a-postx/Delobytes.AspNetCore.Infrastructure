@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-	<Version>1.0.0.0-beta1</Version>
+	<Version>1.0.0.0-beta2</Version>
     <LangVersion>latest</LangVersion>
     <Authors>Алексей Якубин</Authors>
     <Company>Делобайты</Company>
@@ -19,9 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.1.1" />
-	<PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.1.1" />
 	<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.14.1" />
+  </ItemGroup>
+
+  <ItemGroup Label="Package References">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
 </Project>
