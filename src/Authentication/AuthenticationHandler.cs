@@ -223,6 +223,13 @@ public class AuthenticationHandler : IAuthenticationHandler
                 ? tokenHeaderValue.Substring(7) : tokenHeaderValue;
             tokenFound = true;
         }
+        //проблема безопасности
+        //запросы на загрузку файлов идут через window.open, поэтому ключ посылается в параметрах
+        else if (_httpCtx.HttpContext.Request.Query.TryGetValue("at", out StringValues accessToken))
+        {
+            token = accessToken.ToString();
+            tokenFound = true;
+        }
 
         return tokenFound;
     }
