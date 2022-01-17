@@ -69,8 +69,6 @@ public class AuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        string errorMessage = string.Empty;
-
         string clientId = string.Empty;
         string userId = string.Empty;
         string tenantId = string.Empty;
@@ -78,95 +76,82 @@ public class AuthenticationHandler : IAuthenticationHandler
         string email = string.Empty;
         string emailVerified = string.Empty;
 
-        JwtSecurityToken validatedToken;
-
-        if (JwtTokenFound(out string token))
-        {
-            using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_oauthOptions.SecurityTokenValidationTimeoutMsec)))
-            {
-                validatedToken = await ValidateTokenAsync(token, cts.Token);
-            }
-
-            if (validatedToken != null)
-            {
-                clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
-                userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
-                email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailClaimName)?.Value;
-                emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailVerifiedClaimName)?.Value;
-
-                string appMetadataValue = validatedToken.Claims
-                    .FirstOrDefault(claim => claim.Type == _oauthOptions.AppMetadataClaimName)?.Value;
-
-                if (!string.IsNullOrEmpty(appMetadataValue))
-                {
-                    AppMetadata appMetadata = JsonSerializer
-                        .Deserialize<AppMetadata>(appMetadataValue, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                    tenantId = appMetadata.Tid;
-                    tenantAccessType = appMetadata.TenantAccessType;
-                }
-
-                if (string.IsNullOrEmpty(clientId))
-                {
-                    errorMessage = $"{ClaimNames.azp} claim cannot be found";
-                }
-                if (string.IsNullOrEmpty(userId))
-                {
-                    errorMessage = $"{ClaimNames.uid} claim cannot be found";
-                }
-            }
-            else
-            {
-                errorMessage = "Security token validation has failed";
-            }
-        }
-        else
+        if (!JwtTokenFound(out string token))
         {
             return AuthenticateResult.NoResult();
         }
 
-#pragma warning disable CA1508 // переменная может быть модифицирована в условиях
-        if (string.IsNullOrEmpty(errorMessage))
-#pragma warning restore CA1508 // Avoid dead conditional code
-        {
-            AuthenticationTicket ticket = CreateAuthenticationTicket(clientId, userId, tenantId, tenantAccessType,
-                email, emailVerified, validatedToken);
+        JwtSecurityToken validatedToken;
 
-            _log.LogInformation("User {UserId} is authenticated.", userId);
-
-            return AuthenticateResult.Success(ticket);
-        }
-        else
+        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_oauthOptions.SecurityTokenValidationTimeoutMsec)))
         {
-            return AuthenticateResult.Fail(errorMessage);
+            validatedToken = await ValidateTokenAsync(token, cts.Token);
         }
+
+        if (validatedToken == null)
+        {
+            return AuthenticateResult.Fail("Security token validation has failed");
+        }
+
+        clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
+        userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
+        email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailClaimName)?.Value;
+        emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailVerifiedClaimName)?.Value;
+
+        string appMetadataValue = validatedToken.Claims
+            .FirstOrDefault(claim => claim.Type == _oauthOptions.AppMetadataClaimName)?.Value;
+
+        if (!string.IsNullOrEmpty(appMetadataValue))
+        {
+            AppMetadata appMetadata = JsonSerializer
+                .Deserialize<AppMetadata>(appMetadataValue, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            tenantId = appMetadata.Tid;
+            tenantAccessType = appMetadata.TenantAccessType;
+        }
+
+        if (string.IsNullOrEmpty(clientId))
+        {
+            return AuthenticateResult.Fail($"{ClaimNames.azp} claim cannot be found");
+        }
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return AuthenticateResult.Fail($"{ClaimNames.uid} claim cannot be found");
+        }
+
+        UserInfo userInfo = new UserInfo(clientId, userId, tenantId, tenantAccessType, email, emailVerified);
+        AuthenticationTicket ticket = CreateAuthenticationTicket(userInfo, validatedToken);
+
+        _log.LogInformation("User {UserId} is authenticated.", userId);
+
+        return AuthenticateResult.Success(ticket);
     }
 
-    private AuthenticationTicket CreateAuthenticationTicket(string clientId, string userId, string tenantId,
-        string tenantAccessType, string email, string emailVerified, JwtSecurityToken validatedToken)
+    private AuthenticationTicket CreateAuthenticationTicket(UserInfo userInfo, JwtSecurityToken validatedToken)
     {
         ClaimsIdentity userIdentity = new(_oauthOptions.AuthType, ClaimNames.name, ClaimNames.role);
 
-        userIdentity.AddClaim(new Claim(ClaimNames.cid, clientId));
-        userIdentity.AddClaim(new Claim(ClaimNames.uid, userId));
+        userIdentity.AddClaim(new Claim(ClaimNames.cid, userInfo.ClientId));
+        userIdentity.AddClaim(new Claim(ClaimNames.uid, userInfo.UserId));
 
-        if (email != null)
+        if (!string.IsNullOrEmpty(userInfo.TenantId) && Guid.TryParse(userInfo.TenantId, out Guid tid))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.email, email));
+            userIdentity.AddClaim(new Claim(ClaimNames.tid, userInfo.TenantId));
         }
 
-        if (emailVerified != null)
+        if (!string.IsNullOrEmpty(userInfo.TenantAccessType))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.emailVerified, emailVerified));
+            userIdentity.AddClaim(new Claim(ClaimNames.tenantaccesstype, userInfo.TenantAccessType));
         }
 
-        if (!string.IsNullOrEmpty(tenantId) && Guid.TryParse(tenantId, out Guid tid))
+        if (!string.IsNullOrEmpty(userInfo.Email))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.tid, tenantId));
+            userIdentity.AddClaim(new Claim(ClaimNames.email, userInfo.Email));
         }
 
-        if (!string.IsNullOrEmpty(tenantAccessType))
+        if (!string.IsNullOrEmpty(userInfo.EmailVerified))
         {
-            userIdentity.AddClaim(new Claim(ClaimNames.tenantaccesstype, tenantAccessType));
+            userIdentity.AddClaim(new Claim(ClaimNames.emailVerified, userInfo.EmailVerified));
         }
 
         GenericPrincipal userPricipal = new GenericPrincipal(userIdentity, null);
@@ -220,7 +205,7 @@ public class AuthenticationHandler : IAuthenticationHandler
         {
             string tokenHeaderValue = authHeaders.ElementAt(0);
             token = tokenHeaderValue.StartsWith(_oauthOptions.AuthType + " ", StringComparison.OrdinalIgnoreCase)
-                ? tokenHeaderValue.Substring(7) : tokenHeaderValue;
+                ? tokenHeaderValue[7..] : tokenHeaderValue;
             tokenFound = true;
         }
         //проблема безопасности
