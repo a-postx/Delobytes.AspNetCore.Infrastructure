@@ -1,5 +1,3 @@
-using System;
-
 namespace Delobytes.AspNetCore.Infrastructure.Authentication;
 
 /// <summary>
