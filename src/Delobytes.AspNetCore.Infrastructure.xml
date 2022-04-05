@@ -4,6 +4,29 @@
         <name>Delobytes.AspNetCore.Infrastructure</name>
     </assembly>
     <members>
+        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler">
+            <summary>
+            Обработчик аутентификации АПИ-запроса с помощью Auth0.
+            </summary>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.#ctor(Microsoft.Extensions.Logging.ILogger{Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler},Microsoft.AspNetCore.Http.IHttpContextAccessor,Microsoft.IdentityModel.Protocols.IConfigurationManager{Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration},Microsoft.Extensions.Options.IOptions{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
+            <summary>
+            Конструктор.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Отсутствует какой-либо компонент внешней зависимости.</exception>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.InitializeAsync(Microsoft.AspNetCore.Authentication.AuthenticationScheme,Microsoft.AspNetCore.Http.HttpContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.AuthenticateAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
+            <inheritdoc/>
+        </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions">
             <summary>
             Методы расширения.
@@ -11,33 +34,17 @@
         </member>
         <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions.UseAuth0Authentication(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary>
-            Добавляет аутентификацию веб-АПИ приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
+            Добавляет аутентификацию приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
             </summary>
             <param name="app"></param>
             <returns></returns>
         </member>
-        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler">
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions.UseKeyCloakAuthentication(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary>
-            Обработчик аутентификации АПИ-запроса.
+            Добавляет аутентификацию приложения на базе KeyCloak (OAuth2, OpenID Connect и JWT-токены).
             </summary>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler.#ctor(Microsoft.Extensions.Logging.ILogger{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler},Microsoft.AspNetCore.Http.IHttpContextAccessor,Microsoft.IdentityModel.Protocols.IConfigurationManager{Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration},Microsoft.Extensions.Options.IOptions{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
-            <summary>
-            Конструктор.
-            </summary>
-            <exception cref="T:System.ArgumentNullException">Отсутствует какой-либо компонент внешней зависимости.</exception>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler.InitializeAsync(Microsoft.AspNetCore.Authentication.AuthenticationScheme,Microsoft.AspNetCore.Http.HttpContext)">
-            <inheritdoc/>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler.AuthenticateAsync">
-            <inheritdoc/>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
-            <inheritdoc/>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
-            <inheritdoc/>
+            <param name="app"></param>
+            <returns></returns>
         </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions">
             <summary>
@@ -77,7 +84,7 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayHost">
             <summary>
             <para>
-            Адрес публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
+            Адрес публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>
@@ -85,7 +92,7 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayPort">
             <summary>
             <para>
-            Порт публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
+            Порт публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>
@@ -118,27 +125,77 @@
             </para>
             </summary>
         </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TokenValidationClockSkew">
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TenantIdClaimName">
             <summary>
             <para>
-            Временной лаг, который будет допустимым при валидации JWT-токена.
+            Имя удостоверения, которое даёт идентификатор арендатора.
             </para>
-            <para>Default: 2 минуты</para>
             </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TenantAccessTypeClaimName">
+            <summary>
+            <para>
+            Имя удостоверения, которое даёт тип доступа к арендатору.
+            </para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.OpenIdConfigurationEndpoint">
+            <summary>
+            <para>
+            Адрес конфигурации OpenID.
+            </para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TokenValidationParameters">
+            <summary>
+            <para>
+            Параметры валидации JWT-токена.
+            </para>
+            </summary>
+        </member>
+        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptionsValidator">
+            <summary>
+            Валидатор настроек аутентификации.
+            </summary>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptionsValidator.Validate(System.String,Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions)">
+            <summary>
+            Проверяет настройки аутентификации.
+            </summary>
+            <param name="name">Имя.</param>
+            <param name="options">Настройки.</param>
+            <returns></returns>
         </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions">
             <summary>
             Расширения <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> для регистрации сервисов.
             </summary>
         </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddAuth0Authentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.String,System.Action{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddAuth0Authentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Boolean,System.Action{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
             <summary>
             Добавляет в <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> всё необходимое для аутентификации на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
             </summary>
             <param name="services"><see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> в которую нужно добавить аутентификацию.</param>
-            <param name="oidcProviderIssuer">Адрес OpenID-совместимого (OIDC) OAuth2-провайдера, откуда следует забирать обновляемые ключи шифрования JWT-токенов.</param>
             <param name="authSchemeName">Название схемы аутентификации.</param>
-            <param name="configure"><see cref="T:System.Action`1"/> для настройки <see cref="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions"/>.</param>
+            <param name="defaultScheme">Признак использования схемы по-умолчанию.</param>
+            <param name="configureOptions"><see cref="T:System.Action`1"/> для настройки <see cref="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions"/>.</param>
+            <returns>Ссылка на этот экземпляр после завершения операции.</returns>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddKeyCloakAuthentication(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Boolean,System.Action{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
+            <summary>
+            Добавляет в <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> всё необходимое для аутентификации на базе KeyCloak (OAuth2, OpenID Connect и JWT-токены).
+            </summary>
+            <param name="services"><see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> в которую нужно добавить аутентификацию.</param>
+            <param name="authSchemeName">Название схемы аутентификации.</param>
+            <param name="defaultScheme">Признак использования схемы по-умолчанию.</param>
+            <param name="configureOptions"><see cref="T:System.Action`1"/> для настройки <see cref="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions"/>.</param>
+            <returns>Ссылка на этот экземпляр после завершения операции.</returns>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationServiceCollectionExtensions.AddSigningKeysRenewal(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            Добавляет в <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> источник автоматического обновления ключей шифрования JWT-токенов.
+            </summary>
+            <param name="services"><see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection"/> в которую нужно добавить автоматическое обновление ключей подписи.</param>
             <returns>Ссылка на этот экземпляр после завершения операции.</returns>
         </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.ClaimNames">
@@ -209,6 +266,106 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.Dto.AppMetadata.TenantAccessType">
             <summary>
             Тип доступа пользователя к арендатору.
+            </summary>
+        </member>
+        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler">
+            <summary>
+            Обработчик аутентификации АПИ-запроса с помощью KeyCloak.
+            </summary>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler.#ctor(Microsoft.Extensions.Logging.ILogger{Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler},Microsoft.AspNetCore.Http.IHttpContextAccessor,Microsoft.IdentityModel.Protocols.IConfigurationManager{Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration},Microsoft.Extensions.Options.IOptions{Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions})">
+            <summary>
+            Конструктор.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Отсутствует какой-либо компонент внешней зависимости.</exception>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler.InitializeAsync(Microsoft.AspNetCore.Authentication.AuthenticationScheme,Microsoft.AspNetCore.Http.HttpContext)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler.AuthenticateAsync">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.KeyCloakAuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions">
+            <summary>
+            Параметры валидации jwt-токена.
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.RequireSignedTokens">
+            <summary>
+            <para>
+            Требовать наличие подписи.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidateIssuerSigningKey">
+            <summary>
+            <para>
+            Проверять ключи центра валидации.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidateIssuer">
+            <summary>
+            <para>
+            Проверять центр валидации.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidIssuer">
+            <summary>
+            <para>
+            Авторизованный центр валидации.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidateAudience">
+            <summary>
+            <para>
+            Проверять целевую аудиторию.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidAudience">
+            <summary>
+            <para>
+            Авторизованная целевая аудитория.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.RequireExpirationTime">
+            <summary>
+            <para>
+            Требовать наличие времени жизни.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ValidateLifetime">
+            <summary>
+            <para>
+            Проверять время жизни.
+            </para>
+            <para>Default: true</para>
+            </summary>
+        </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.TokenValidationOptions.ClockSkew">
+            <summary>
+            <para>
+            Временной лаг, который будет допустимым при валидации времени жизни JWT-токена.
+            </para>
+            <para>Default: 5 минут</para>
             </summary>
         </member>
     </members>

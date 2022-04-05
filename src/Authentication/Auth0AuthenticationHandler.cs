@@ -21,29 +21,29 @@ using Microsoft.Net.Http.Headers;
 namespace Delobytes.AspNetCore.Infrastructure.Authentication;
 
 /// <summary>
-/// Обработчик аутентификации АПИ-запроса.
+/// Обработчик аутентификации АПИ-запроса с помощью Auth0.
 /// </summary>
-public class AuthenticationHandler : IAuthenticationHandler
+public class Auth0AuthenticationHandler : IAuthenticationHandler
 {
     /// <summary>
     /// Конструктор.
     /// </summary>
     /// <exception cref="ArgumentNullException">Отсутствует какой-либо компонент внешней зависимости.</exception>
-    public AuthenticationHandler(ILogger<AuthenticationHandler> logger,
+    public Auth0AuthenticationHandler(ILogger<Auth0AuthenticationHandler> logger,
         IHttpContextAccessor httpContextAccessor,
         IConfigurationManager<OpenIdConnectConfiguration> configManager,
-        IOptions<AuthenticationOptions> oauthOptions)
+        IOptions<AuthenticationOptions> authOptions)
     {
         _log = logger ?? throw new ArgumentNullException(nameof(logger));
-        _httpCtx = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));  
+        _httpCtx = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         _configManager = configManager ?? throw new ArgumentNullException(nameof(configManager));
-        _oauthOptions = oauthOptions.Value;
+        _authOptions = authOptions.Value;
     }
 
-    private readonly ILogger<AuthenticationHandler> _log;
+    private readonly ILogger<Auth0AuthenticationHandler> _log;
     private readonly IHttpContextAccessor _httpCtx;
     private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
-    private readonly AuthenticationOptions _oauthOptions;
+    private readonly AuthenticationOptions _authOptions;
     private AuthenticationScheme _scheme;
     private RequestHeaders _headers;
 
@@ -82,7 +82,7 @@ public class AuthenticationHandler : IAuthenticationHandler
 
         JwtSecurityToken validatedToken;
 
-        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_oauthOptions.SecurityTokenValidationTimeoutMsec)))
+        using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.SecurityTokenValidationTimeoutMsec)))
         {
             validatedToken = await ValidateTokenAsync(token, cts.Token);
         }
@@ -94,11 +94,11 @@ public class AuthenticationHandler : IAuthenticationHandler
 
         clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
         userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
-        email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailClaimName)?.Value;
-        emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _oauthOptions.EmailVerifiedClaimName)?.Value;
+        email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailClaimName)?.Value;
+        emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailVerifiedClaimName)?.Value;
 
         string appMetadataValue = validatedToken.Claims
-            .FirstOrDefault(claim => claim.Type == _oauthOptions.AppMetadataClaimName)?.Value;
+            .FirstOrDefault(claim => claim.Type == _authOptions.AppMetadataClaimName)?.Value;
 
         if (!string.IsNullOrEmpty(appMetadataValue))
         {
@@ -128,7 +128,7 @@ public class AuthenticationHandler : IAuthenticationHandler
 
     private AuthenticationTicket CreateAuthenticationTicket(UserInfo userInfo, JwtSecurityToken validatedToken)
     {
-        ClaimsIdentity userIdentity = new(_oauthOptions.AuthType, ClaimNames.name, ClaimNames.role);
+        ClaimsIdentity userIdentity = new(_authOptions.AuthType, ClaimNames.name, ClaimNames.role);
 
         userIdentity.AddClaim(new Claim(ClaimNames.cid, userInfo.ClientId));
         userIdentity.AddClaim(new Claim(ClaimNames.uid, userInfo.UserId));
@@ -160,7 +160,7 @@ public class AuthenticationHandler : IAuthenticationHandler
         {
             IssuedUtc = validatedToken.IssuedAt,
             ExpiresUtc = validatedToken.ValidTo,
-            RedirectUri = _oauthOptions.LoginRedirectPath
+            RedirectUri = _authOptions.LoginRedirectPath
         };
 
         return new AuthenticationTicket(principal, props, _scheme.Name);
@@ -171,11 +171,11 @@ public class AuthenticationHandler : IAuthenticationHandler
     {
         HttpContext context = _httpCtx.HttpContext;
 
-        if (context.Request.Host.Host == _oauthOptions.ApiGatewayHost
-            && context.Request.Host.Port == _oauthOptions.ApiGatewayPort)
+        if (context.Request.Host.Host == _authOptions.ApiGatewayHost
+            && context.Request.Host.Port == _authOptions.ApiGatewayPort)
         {
             _log.LogInformation("Challenge: redirected.");
-            context.Response.Redirect(_oauthOptions.LoginRedirectPath);
+            context.Response.Redirect(_authOptions.LoginRedirectPath);
             return Task.CompletedTask;
         }
         else
@@ -203,7 +203,7 @@ public class AuthenticationHandler : IAuthenticationHandler
         if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authHeaders) && authHeaders.Any())
         {
             string tokenHeaderValue = authHeaders.ElementAt(0);
-            token = tokenHeaderValue.StartsWith(_oauthOptions.AuthType + " ", StringComparison.OrdinalIgnoreCase)
+            token = tokenHeaderValue.StartsWith(_authOptions.AuthType + " ", StringComparison.OrdinalIgnoreCase)
                 ? tokenHeaderValue[7..] : tokenHeaderValue;
             tokenFound = true;
         }
@@ -253,6 +253,11 @@ public class AuthenticationHandler : IAuthenticationHandler
 
             return validatedToken;
         }
+        catch (SecurityTokenDecryptionFailedException ex)
+        {
+            _log.LogInformation("Security token cannot be decrypted: {ExceptionMessage}", ex.Message);
+            return null;
+        }
         catch (SecurityTokenExpiredException)
         {
             _log.LogInformation("Security token expired.");
@@ -281,19 +286,29 @@ public class AuthenticationHandler : IAuthenticationHandler
         OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(cancellationToken);
         ICollection<SecurityKey> signingKeys = discoveryDocument.SigningKeys;
 
-        TokenValidationParameters validationParameters = new()
+        TokenValidationParameters validationParameters = new TokenValidationParameters
         {
-            RequireExpirationTime = true,
-            RequireSignedTokens = true,
-            ValidateIssuer = true,
-            ValidIssuer = _oauthOptions.Authority + "/",
-            ValidateAudience = true,
-            ValidAudience = _oauthOptions.Audience,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKeys = signingKeys,
-            ValidateLifetime = true,
-            ClockSkew = _oauthOptions.TokenValidationClockSkew,
+            IssuerSigningKeys = signingKeys
         };
+
+        if (_authOptions.TokenValidationParameters != null)
+        {
+            validationParameters.RequireExpirationTime = _authOptions.TokenValidationParameters.RequireExpirationTime;
+            validationParameters.RequireSignedTokens = _authOptions.TokenValidationParameters.RequireSignedTokens;
+            validationParameters.ValidateIssuerSigningKey = _authOptions.TokenValidationParameters.ValidateIssuerSigningKey;
+            validationParameters.ValidateIssuer = _authOptions.TokenValidationParameters.ValidateIssuer;
+            validationParameters.ValidIssuer = _authOptions.TokenValidationParameters.ValidIssuer;
+            validationParameters.ValidateAudience = _authOptions.TokenValidationParameters.ValidateAudience;
+            validationParameters.ValidAudience = _authOptions.TokenValidationParameters.ValidAudience;
+            validationParameters.ValidateLifetime = _authOptions.TokenValidationParameters.ValidateLifetime;
+            validationParameters.ClockSkew = _authOptions.TokenValidationParameters.ClockSkew;
+        }
+        else
+        {
+            validationParameters.ValidateIssuerSigningKey = true;
+            validationParameters.ValidIssuer = _authOptions.Authority;
+            validationParameters.ValidAudience = _authOptions.Audience;
+        }
 
         return validationParameters;
     }

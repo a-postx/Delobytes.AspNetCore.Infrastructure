@@ -37,7 +37,7 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Адрес публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
+    /// Адрес публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
     /// при необходимости повторной аутентификации.
     /// </para>
     /// </summary>
@@ -45,7 +45,7 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Порт публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
+    /// Порт публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
     /// при необходимости повторной аутентификации.
     /// </para>
     /// </summary>
@@ -81,9 +81,29 @@ public class AuthenticationOptions
 
     /// <summary>
     /// <para>
-    /// Временной лаг, который будет допустимым при валидации JWT-токена.
+    /// Имя удостоверения, которое даёт идентификатор арендатора.
     /// </para>
-    /// <para>Default: 2 минуты</para>
     /// </summary>
-    public TimeSpan TokenValidationClockSkew { get; set; } = TimeSpan.FromMinutes(2);
+    public string TenantIdClaimName { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Имя удостоверения, которое даёт тип доступа к арендатору.
+    /// </para>
+    /// </summary>
+    public string TenantAccessTypeClaimName { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Адрес конфигурации OpenID.
+    /// </para>
+    /// </summary>
+    public string OpenIdConfigurationEndpoint { get; set; }
+
+    /// <summary>
+    /// <para>
+    /// Параметры валидации JWT-токена.
+    /// </para>
+    /// </summary>
+    public TokenValidationOptions TokenValidationParameters { get; set; }
 }
