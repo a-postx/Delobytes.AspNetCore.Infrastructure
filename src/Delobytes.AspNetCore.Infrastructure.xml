@@ -27,25 +27,6 @@
         <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.Auth0AuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties)">
             <inheritdoc/>
         </member>
-        <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions">
-            <summary>
-            Методы расширения.
-            </summary>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions.UseAuth0Authentication(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
-            <summary>
-            Добавляет аутентификацию приложения на базе Auth0 (OAuth2, OpenID Connect и JWT-токены).
-            </summary>
-            <param name="app"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationApplicationBuilderExtensions.UseKeyCloakAuthentication(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
-            <summary>
-            Добавляет аутентификацию приложения на базе KeyCloak (OAuth2, OpenID Connect и JWT-токены).
-            </summary>
-            <param name="app"></param>
-            <returns></returns>
-        </member>
         <member name="T:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions">
             <summary>
             Настройки аутентификации.
