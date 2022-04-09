@@ -65,7 +65,7 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayHost">
             <summary>
             <para>
-            Адрес публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
+            Адрес публичного АПИ-шлюза или приложения, на которое должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>
@@ -73,7 +73,7 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayPort">
             <summary>
             <para>
-            Порт публичного АПИ-шлюза (если используется) или приложения, на которое должно происходить перенаправление
+            Порт публичного АПИ-шлюза или приложения, на которое должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>

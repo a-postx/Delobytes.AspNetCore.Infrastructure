@@ -68,16 +68,9 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        string clientId = string.Empty;
-        string userId = string.Empty;
-        string tenantId = string.Empty;
-        string tenantAccessType = string.Empty;
-        string email = string.Empty;
-        string emailVerified = string.Empty;
-
         if (!JwtTokenFound(out string token))
         {
-            return AuthenticateResult.NoResult();
+            return AuthenticateResult.Fail("Security token is not found");
         }
 
         JwtSecurityToken validatedToken;
@@ -92,10 +85,12 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
             return AuthenticateResult.Fail("Security token validation has failed");
         }
 
-        clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
-        userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
-        email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailClaimName)?.Value;
-        emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailVerifiedClaimName)?.Value;
+        string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
+        string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
+        string email = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailClaimName)?.Value;
+        string emailVerified = validatedToken.Claims.FirstOrDefault(claim => claim.Type == _authOptions.EmailVerifiedClaimName)?.Value;
+        string tenantId = string.Empty;
+        string tenantAccessType = string.Empty;
 
         string appMetadataValue = validatedToken.Claims
             .FirstOrDefault(claim => claim.Type == _authOptions.AppMetadataClaimName)?.Value;
@@ -159,9 +154,13 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
         AuthenticationProperties props = new AuthenticationProperties
         {
             IssuedUtc = validatedToken.IssuedAt,
-            ExpiresUtc = validatedToken.ValidTo,
-            RedirectUri = _authOptions.LoginRedirectPath
+            ExpiresUtc = validatedToken.ValidTo
         };
+
+        if (!string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
+        {
+            props.RedirectUri = _authOptions.LoginRedirectPath;
+        }
 
         return new AuthenticationTicket(principal, props, _scheme.Name);
     }
@@ -171,19 +170,22 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
     {
         HttpContext context = _httpCtx.HttpContext;
 
-        if (context.Request.Host.Host == _authOptions.ApiGatewayHost
-            && context.Request.Host.Port == _authOptions.ApiGatewayPort)
+        if (!string.IsNullOrEmpty(_authOptions.ApiGatewayHost)
+            && context.Request.Host.Host == _authOptions.ApiGatewayHost
+            && _authOptions.ApiGatewayPort != 0
+            && context.Request.Host.Port == _authOptions.ApiGatewayPort
+            && !string.IsNullOrEmpty(_authOptions.LoginRedirectPath))
         {
             _log.LogInformation("Challenge: redirected.");
             context.Response.Redirect(_authOptions.LoginRedirectPath);
-            return Task.CompletedTask;
         }
         else
         {
             _log.LogInformation("Challenge: unauthorized.");
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            return Task.CompletedTask;
         }
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc/>

@@ -14,31 +14,31 @@
 ### Аутентификация на базе KeyCloak
 Добавляет JWT-аутентификацию на базе KeyCloak со специфическими настройками интеграции.
 
-1. Добавьте обработчик аутентификации:
+1. Установите KeyCloak и откройте страницу описания конечных точек инсталляции (/.well-known/openid-configuration).
+
+2. Добавьте обработчик Кейклоук аутентификации в ваше .Net Core приложение:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
     services.AddKeyCloakAuthentication("SchemeName", true, options =>
         {
-            options.Authority = oauthOptions.Authority;
-            options.Audience = oauthOptions.Audience;
+            options.Authority = "https://mykeycloakinstallation.com/auth/realms/myrealm"; //"issuer" endpoint
+            options.Audience = "account";
+			options.OpenIdConfigurationEndpoint = "https://mykeycloakinstallation.com/auth/realms/myrealm/.well-known/openid-configuration";
             options.LoginRedirectPath = "/authentication/login";
-            options.ApiGatewayHost = oauthOptions.ApiGatewayHost;
-            options.ApiGatewayPort = oauthOptions.ApiGatewayPort;
             options.EmailClaimName = "email";
             options.EmailVerifiedClaimName = "email_verified";
             options.TenantIdClaimName = "tid";
             options.TenantAccessTypeClaimName = "tenantaccesstype";
-            options.OpenIdConfigurationEndpoint = oauthOptions.OidcIssuer + "/.well-known/openid-configuration";
             options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,
                 RequireSignedTokens = true,
                 ValidateIssuer = true,
-                ValidIssuer = oauthOptions.Authority,
+                ValidIssuer = "https://mykeycloakinstallation.com/auth/realms/myrealm",
                 ValidateAudience = true,
-                ValidAudience = oauthOptions.Audience,
+                ValidAudience = "account",
                 ValidateIssuerSigningKey = true,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromMinutes(2),
@@ -53,7 +53,7 @@ public void Configure(IApplicationBuilder application)
 }
 ```
 
-2. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы обезопасить доступ:
+3. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
 
 ```
 [Route("[controller]")]
@@ -85,8 +85,6 @@ public void ConfigureServices(IServiceCollection services)
             options.Authority = oauthOptions.Authority;
             options.Audience = oauthOptions.Audience;
             options.LoginRedirectPath = "/authentication/login";
-            options.ApiGatewayHost = secrets.ApiGatewayHost;
-            options.ApiGatewayPort = secrets.ApiGatewayPort;
             options.EmailClaimName = "email_claim_name";
             options.EmailVerifiedClaimName = "email_verified_claim_name";
             options.AppMetadataClaimName = "app_metadata_claim_name";
@@ -100,7 +98,7 @@ public void Configure(IApplicationBuilder application)
 }
 ```
 
-2. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы обезопасить доступ:
+2. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
 
 ```
 [Route("[controller]")]

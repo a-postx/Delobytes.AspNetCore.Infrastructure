@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-	<Version>2.0.0.0</Version>
+	<Version>2.1.0.0</Version>
     <LangVersion>latest</LangVersion>
     <Authors>Алексей Якубин</Authors>
     <Company>Делобайты</Company>
     <Copyright>Авторские права © Делобайты 2022. Все права защищены</Copyright>
-	<Description>Компоненты инфраструктурного слоя.</Description>
+	<Description>Компоненты инфраструктурного слоя для .net core: аутентификация на базе KeyCloak, Auth0.</Description>
 	<PackageProjectUrl>https://github.com/a-postx/Delobytes.AspNetCore.Infrastructure</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/a-postx/Delobytes.AspNetCore.Infrastructure.git</RepositoryUrl>
