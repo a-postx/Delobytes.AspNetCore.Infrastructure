@@ -12,9 +12,9 @@ The fastest way to add package to your app is via [NuGet](https://www.nuget.org/
 ## Usage
 
 ## KeyCloak Authentication
-Add JWT-authentication based on KeyCloak with specific token validation settings. Optionally you can add claim names that should be added to the user identity: authentication handler will grab these from the JWT-token.
+Add JWT-authentication based on KeyCloak. You can add claim names that should be taken from JWT-token and added to the user identity if needed.
 
-1. Set up KeyCloak and open its endpoint configuration page (/.well-known/openid-configuration).
+1. Set up KeyCloak, create realm and open its endpoint configuration page (/.well-known/openid-configuration).
 
 2. Add KeyCloak authentication handler to your application:
 
@@ -26,11 +26,6 @@ public void ConfigureServices(IServiceCollection services)
             options.Authority = "https://mykeycloakinstallation.com/auth/realms/myrealm"; //"issuer" endpoint
             options.Audience = "account";
 			options.OpenIdConfigurationEndpoint = "https://mykeycloakinstallation.com/auth/realms/myrealm/.well-known/openid-configuration";
-            options.LoginRedirectPath = "/authentication/login";
-            options.EmailClaimName = "email";
-            options.EmailVerifiedClaimName = "email_verified";
-            options.TenantIdClaimName = "tid";
-            options.TenantAccessTypeClaimName = "tenantaccesstype";
             options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,
@@ -73,21 +68,32 @@ public class HomeController : ControllerBase
 ```
 
 ## Auth0 Authentication
-Add JWT-authentication based on Auth0 with specific integration settings.
+Add JWT-authentication based on Auth0. You can add claim names that should be taken from JWT-token and added to the user identity if needed.
 
-1. Add authentication handler:  
+1. Register on Auth0, create application and open its endpoint configuration page (/.well-known/openid-configuration).
+
+2. Add authentication handler:  
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddAuth0Authentication("https://dev-xxxxxxxx.eu.auth0.com/oauth/", "SchemeName", options =>
+    services.AddAuth0Authentication("SchemeName", true, options =>
         {
             options.Authority = "https://dev-xxxxxxxx.eu.auth0.com";
             options.Audience = "https://myapp-audience.com";
-            options.LoginRedirectPath = "/authentication/login";
-            options.EmailClaimName = "email_claim_name";
-            options.EmailVerifiedClaimName = "email_verified_claim_name";
-            options.AppMetadataClaimName = "app_metadata_claim_name";
+			options.OpenIdConfigurationEndpoint = "https://dev-xxxxxxxx.eu.auth0.com/.well-known/openid-configuration";
+			options.TokenValidationParameters = new TokenValidationOptions
+            {
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                ValidateIssuer = true,
+                ValidIssuer = "https://dev-xxxxxxxx.eu.auth0.com/",
+                ValidateAudience = true,
+                ValidAudience = "account",
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(2),
+            };
         });
 }
 
@@ -98,7 +104,7 @@ public void Configure(IApplicationBuilder application)
 }
 ```
 
-2. Set attribute Authorize to a method or controller:
+3. Set attribute Authorize to a method or controller:
 
 ```
 [Route("[controller]")]

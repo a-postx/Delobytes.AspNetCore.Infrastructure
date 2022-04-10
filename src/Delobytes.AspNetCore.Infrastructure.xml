@@ -40,14 +40,6 @@
             <para>Default: Bearer</para>
             </summary>
         </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.SecurityTokenValidationTimeoutMsec">
-            <summary>
-            <para>
-            Таймаут валидации JWT-токена.
-            </para>
-            <para>Default: 10000</para>
-            </summary>
-        </member>
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.Authority">
             <summary>
             <para>
@@ -62,10 +54,17 @@
             </para>
             </summary>
         </member>
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.OpenIdConfigurationEndpoint">
+            <summary>
+            <para>
+            Адрес конфигурации OpenID.
+            </para>
+            </summary>
+        </member>
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayHost">
             <summary>
             <para>
-            Адрес публичного АПИ-шлюза или приложения, на которое должно происходить перенаправление
+            Адрес публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>
@@ -73,7 +72,7 @@
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.ApiGatewayPort">
             <summary>
             <para>
-            Порт публичного АПИ-шлюза или приложения, на которое должно происходить перенаправление
+            Порт публичного АПИ-шлюза (если используется), на который должно происходить перенаправление
             при необходимости повторной аутентификации.
             </para>
             </summary>
@@ -85,17 +84,10 @@
             </para>
             </summary>
         </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.EmailClaimName">
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.CustomClaims">
             <summary>
             <para>
-            Имя удостоверения, которое даёт электропочту пользователя.
-            </para>
-            </summary>
-        </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.EmailVerifiedClaimName">
-            <summary>
-            <para>
-            Имя удостоверения, которое даёт признак подтверждения электропочты пользователя.
+            Список дополнительных удостоверений, которые пользователь должен получить из токена.
             </para>
             </summary>
         </member>
@@ -106,25 +98,12 @@
             </para>
             </summary>
         </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TenantIdClaimName">
+        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TokenValidationTimeoutMsec">
             <summary>
             <para>
-            Имя удостоверения, которое даёт идентификатор арендатора.
+            Таймаут валидации JWT-токена.
             </para>
-            </summary>
-        </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TenantAccessTypeClaimName">
-            <summary>
-            <para>
-            Имя удостоверения, которое даёт тип доступа к арендатору.
-            </para>
-            </summary>
-        </member>
-        <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.OpenIdConfigurationEndpoint">
-            <summary>
-            <para>
-            Адрес конфигурации OpenID.
-            </para>
+            <para>Default: 10000</para>
             </summary>
         </member>
         <member name="P:Delobytes.AspNetCore.Infrastructure.Authentication.AuthenticationOptions.TokenValidationParameters">

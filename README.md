@@ -11,10 +11,10 @@
 
 ## Использование
 
-### Аутентификация на базе KeyCloak
-Добавляет JWT-аутентификацию на базе KeyCloak со специфическими настройками интеграции.
+### Аутентификация с помощью KeyCloak
+Добавляет JWT-аутентификацию на базе KeyCloak. Если необходимо, вы можете добавить названия удостоверений, которые будут взяты из токена и добавлены аутентифицированному пользователю.
 
-1. Установите KeyCloak и откройте страницу описания конечных точек инсталляции (/.well-known/openid-configuration).
+1. Установите KeyCloak, создайте рилм и откройте его страницу описания конечных точек (/.well-known/openid-configuration).
 
 2. Добавьте обработчик Кейклоук аутентификации в ваше .Net Core приложение:
 
@@ -26,11 +26,6 @@ public void ConfigureServices(IServiceCollection services)
             options.Authority = "https://mykeycloakinstallation.com/auth/realms/myrealm"; //"issuer" endpoint
             options.Audience = "account";
 			options.OpenIdConfigurationEndpoint = "https://mykeycloakinstallation.com/auth/realms/myrealm/.well-known/openid-configuration";
-            options.LoginRedirectPath = "/authentication/login";
-            options.EmailClaimName = "email";
-            options.EmailVerifiedClaimName = "email_verified";
-            options.TenantIdClaimName = "tid";
-            options.TenantAccessTypeClaimName = "tenantaccesstype";
             options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,
@@ -73,21 +68,32 @@ public class HomeController : ControllerBase
 ```
 
 ### Аутентификация на базе Auth0
-Добавляет JWT-аутентификацию на базе сервиса Auth0 со специфическими настройками интеграции.
+Добавляет JWT-аутентификацию на базе сервиса Auth0. Если необходимо, вы можете добавить названия удостоверений, которые будут взяты из токена и добавлены аутентифицированному пользователю.
 
-1. Добавьте обработчик аутентификации:
+1. Зарегистрируйтесь в Auth0, создайте приложение и откройте его страницу описания конечных точек (/.well-known/openid-configuration).
+
+2. Добавьте обработчик аутентификации:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddAuth0Authentication(secrets.OidcProviderIssuer, "SchemeName", options =>
+    services.AddAuth0Authentication("SchemeName", true, options =>
         {
-            options.Authority = oauthOptions.Authority;
-            options.Audience = oauthOptions.Audience;
-            options.LoginRedirectPath = "/authentication/login";
-            options.EmailClaimName = "email_claim_name";
-            options.EmailVerifiedClaimName = "email_verified_claim_name";
-            options.AppMetadataClaimName = "app_metadata_claim_name";
+            options.Authority = "https://dev-xxxxxxxx.eu.auth0.com";
+            options.Audience = "https://myapp-audience.com";
+			options.OpenIdConfigurationEndpoint = "https://dev-xxxxxxxx.eu.auth0.com/.well-known/openid-configuration";
+			options.TokenValidationParameters = new TokenValidationOptions
+            {
+                RequireExpirationTime = true,
+                RequireSignedTokens = true,
+                ValidateIssuer = true,
+                ValidIssuer = "https://dev-xxxxxxxx.eu.auth0.com/",
+                ValidateAudience = true,
+                ValidAudience = "account",
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromMinutes(2),
+            };
         });
 }
 
@@ -98,7 +104,7 @@ public void Configure(IApplicationBuilder application)
 }
 ```
 
-2. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
+3. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
 
 ```
 [Route("[controller]")]
