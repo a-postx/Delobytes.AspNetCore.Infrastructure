@@ -25,7 +25,7 @@ public void ConfigureServices(IServiceCollection services)
         {
             options.Authority = "https://mykeycloakinstallation.com/auth/realms/myrealm"; //"issuer" endpoint
             options.Audience = "account";
-			options.OpenIdConfigurationEndpoint = "https://mykeycloakinstallation.com/auth/realms/myrealm/.well-known/openid-configuration";
+            options.OpenIdConfigurationEndpoint = "https://mykeycloakinstallation.com/auth/realms/myrealm/.well-known/openid-configuration";
             options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,
@@ -50,7 +50,7 @@ public void Configure(IApplicationBuilder application)
 
 3. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
 
-```
+```csharp
 [Route("[controller]")]
 [ApiController]
 [Authorize]
@@ -81,8 +81,8 @@ public void ConfigureServices(IServiceCollection services)
         {
             options.Authority = "https://dev-xxxxxxxx.eu.auth0.com";
             options.Audience = "https://myapp-audience.com";
-			options.OpenIdConfigurationEndpoint = "https://dev-xxxxxxxx.eu.auth0.com/.well-known/openid-configuration";
-			options.TokenValidationParameters = new TokenValidationOptions
+            options.OpenIdConfigurationEndpoint = "https://dev-xxxxxxxx.eu.auth0.com/.well-known/openid-configuration";
+            options.TokenValidationParameters = new TokenValidationOptions
             {
                 RequireExpirationTime = true,
                 RequireSignedTokens = true,
@@ -106,7 +106,7 @@ public void Configure(IApplicationBuilder application)
 
 3. Поместите атрибут Authorize к методу или ко всему контроллеру, чтобы доступ могли получить только аутентифицированные пользователи:
 
-```
+```csharp
 [Route("[controller]")]
 [ApiController]
 [Authorize]
