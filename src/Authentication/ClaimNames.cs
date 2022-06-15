@@ -5,7 +5,7 @@ namespace Delobytes.AspNetCore.Infrastructure.Authentication;
 /// </summary>
 public static class ClaimNames
 {
-#pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable IDE1006 // JWT-стандарт использует нижний регистр
     /// <summary>
     /// Идентификатор клиентского приложения.
     /// </summary>
@@ -29,7 +29,7 @@ public static class ClaimNames
     /// <summary>
     /// Признак проверенной электропочты.
     /// </summary>
-    public const string emailVerified = nameof(emailVerified);
+    public const string email_verified = nameof(email_verified);
     /// <summary>
     /// Имя пользователя.
     /// </summary>

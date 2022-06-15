@@ -188,7 +188,7 @@
             Электропочта.
             </summary>
         </member>
-        <member name="F:Delobytes.AspNetCore.Infrastructure.Authentication.ClaimNames.emailVerified">
+        <member name="F:Delobytes.AspNetCore.Infrastructure.Authentication.ClaimNames.email_verified">
             <summary>
             Признак проверенной электропочты.
             </summary>
