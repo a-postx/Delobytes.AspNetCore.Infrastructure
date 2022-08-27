@@ -65,7 +65,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        if (!JwtTokenFound(out string? token))
+        if (!TryGetJwtToken(out string? token))
         {
             return AuthenticateResult.Fail("Security token is not found");
         }
@@ -191,7 +191,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
         return Task.CompletedTask;
     }
 
-    private bool JwtTokenFound(out string? token)
+    private bool TryGetJwtToken(out string? token)
     {
         if (_httpCtx.HttpContext == null)
         {
@@ -240,45 +240,42 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
 
         TokenValidationParameters validationParameters = await GetValidationParametersAsync(cancellationToken);
 
+        JwtSecurityToken? validatedToken = null;
+
         try
         {
             ClaimsPrincipal principal = jwtHandler.ValidateToken(token, validationParameters, out SecurityToken rawValidatedToken);
 
-            JwtSecurityToken validatedToken = (JwtSecurityToken)rawValidatedToken;
+            validatedToken = (JwtSecurityToken)rawValidatedToken;
             string expectedAlg = SecurityAlgorithms.RsaSha256;
 
             if (validatedToken.Header?.Alg == null || validatedToken.Header?.Alg != expectedAlg)
             {
                 throw new SecurityTokenValidationException($"The security token alg must be {expectedAlg}.");
             }
-
-            return validatedToken;
         }
         catch (SecurityTokenDecryptionFailedException ex)
         {
             _log.LogInformation("Security token cannot be decrypted: {ExceptionMessage}", ex.Message);
-            return null;
         }
         catch (SecurityTokenExpiredException)
         {
             _log.LogInformation("Security token expired.");
-            return null;
         }
         catch (SecurityTokenValidationException ex)
         {
             _log.LogInformation("Security token validation failed: {ExceptionMessage}", ex.Message);
-            return null;
         }
         catch (SecurityTokenException ex)
         {
             _log.LogWarning(ex, "Security token exception.");
-            return null;
         }
         catch (Exception ex)
         {
             _log.LogError(ex, "Security token validation failed with exception.");
-            return null;
         }
+
+        return validatedToken;
     }
 
     private async Task<TokenValidationParameters> GetValidationParametersAsync(CancellationToken cancellationToken)

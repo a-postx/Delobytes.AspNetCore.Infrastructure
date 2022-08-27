@@ -114,8 +114,8 @@ public class Auth0AuthenticationHandler : IAuthenticationHandler
             }
         }
 
-        string? tenantId = string.Empty;
-        string? tenantAccessType = string.Empty;
+        string? tenantId = null;
+        string? tenantAccessType = null;
 
         string? appMetadataValue = validatedToken.Claims
             .FirstOrDefault(claim => claim.Type == _authOptions.AppMetadataClaimName)?.Value;
