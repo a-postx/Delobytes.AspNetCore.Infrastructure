@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Delobytes.AspNetCore.Infrastructure.Authentication;
 
 /// <summary>
@@ -20,21 +18,21 @@ public class AuthenticationOptions
     /// Поставщик безопасности, который выписал токен. Используется при проверке ValidIssuer в токене.
     /// </para>
     /// </summary>
-    public string Authority { get; set; }
+    public string? Authority { get; set; }
 
     /// <summary>
     /// <para>
     /// Аудитория, для которой выписан токен. Используется при проверке ValidAudience в токене.
     /// </para>
     /// </summary>
-    public string Audience { get; set; }
+    public string? Audience { get; set; }
 
     /// <summary>
     /// <para>
     /// Адрес конфигурации OpenID.
     /// </para>
     /// </summary>
-    public string OpenIdConfigurationEndpoint { get; set; }
+    public string? OpenIdConfigurationEndpoint { get; set; }
 
     /// <summary>
     /// <para>
@@ -42,7 +40,7 @@ public class AuthenticationOptions
     /// при необходимости повторной аутентификации.
     /// </para>
     /// </summary>
-    public string ApiGatewayHost { get; set; }
+    public string? ApiGatewayHost { get; set; }
 
     /// <summary>
     /// <para>
@@ -50,14 +48,14 @@ public class AuthenticationOptions
     /// при необходимости повторной аутентификации.
     /// </para>
     /// </summary>
-    public int ApiGatewayPort { get; set; }
+    public int? ApiGatewayPort { get; set; }
 
     /// <summary>
     /// <para>
     /// Путь (относительный) на который нужно перенаправлять клиента при необходимости повторной аутентификации.
     /// </para>
     /// </summary>
-    public string LoginRedirectPath { get; set; }
+    public string? LoginRedirectPath { get; set; }
 
     /// <summary>
     /// <para>
@@ -71,7 +69,7 @@ public class AuthenticationOptions
     /// Имя удостоверения, которое даёт метаданные пользователя.
     /// </para>
     /// </summary>
-    public string AppMetadataClaimName { get; set; }
+    public string? AppMetadataClaimName { get; set; }
 
     /// <summary>
     /// <para>
@@ -86,5 +84,5 @@ public class AuthenticationOptions
     /// Параметры валидации JWT-токена.
     /// </para>
     /// </summary>
-    public TokenValidationOptions TokenValidationParameters { get; set; }
+    public TokenValidationOptions? TokenValidationParameters { get; set; }
 }

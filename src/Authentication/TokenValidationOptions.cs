@@ -35,7 +35,7 @@ public class TokenValidationOptions
     /// </para>
     /// <para>Default: true</para>
     /// </summary>
-    public string ValidIssuer { get; set; }
+    public string? ValidIssuer { get; set; }
 
     /// <summary>
     /// <para>
@@ -51,7 +51,7 @@ public class TokenValidationOptions
     /// </para>
     /// <para>Default: true</para>
     /// </summary>
-    public string ValidAudience { get; set; }
+    public string? ValidAudience { get; set; }
 
     /// <summary>
     /// <para>

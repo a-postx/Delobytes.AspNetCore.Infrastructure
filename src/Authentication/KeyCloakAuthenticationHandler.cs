@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -42,8 +41,8 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     private readonly IHttpContextAccessor _httpCtx;
     private readonly IConfigurationManager<OpenIdConnectConfiguration> _configManager;
     private readonly AuthenticationOptions _authOptions;
-    private AuthenticationScheme _scheme;
-    private RequestHeaders _headers;
+    private AuthenticationScheme _scheme = default!; //инициализируем в автоматическом вызове InitializeAsync
+    private RequestHeaders _headers = default!;
 
     /// <inheritdoc/>
     public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
@@ -66,12 +65,17 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        if (!JwtTokenFound(out string token))
+        if (!JwtTokenFound(out string? token))
         {
             return AuthenticateResult.Fail("Security token is not found");
         }
 
-        JwtSecurityToken validatedToken;
+        if (token == null)
+        {
+            return AuthenticateResult.Fail("Security token is not found");
+        }
+
+        JwtSecurityToken? validatedToken;
 
         using (CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(_authOptions.TokenValidationTimeoutMsec)))
         {
@@ -83,8 +87,8 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
             return AuthenticateResult.Fail("Security token validation has failed");
         }
 
-        string clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
-        string userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
+        string? clientId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.azp)?.Value;
+        string? userId = validatedToken.Claims.FirstOrDefault(claim => claim.Type == ClaimNames.sub)?.Value;
 
         if (string.IsNullOrEmpty(clientId))
         {
@@ -100,7 +104,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
 
         foreach (string claimName in _authOptions.CustomClaims)
         {
-            string claimValue = validatedToken.Claims.FirstOrDefault(claim => claim.Type == claimName)?.Value;
+            string? claimValue = validatedToken.Claims.FirstOrDefault(claim => claim.Type == claimName)?.Value;
 
             if (!string.IsNullOrEmpty(claimValue))
             {
@@ -146,8 +150,13 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     }
 
     /// <inheritdoc/>
-    public Task ChallengeAsync(AuthenticationProperties properties)
+    public Task ChallengeAsync(AuthenticationProperties? properties)
     {
+        if (_httpCtx.HttpContext == null)
+        {
+            throw new InvalidOperationException("Http context not found");
+        }
+
         HttpContext context = _httpCtx.HttpContext;
 
         if (!string.IsNullOrEmpty(_authOptions.ApiGatewayHost)
@@ -169,16 +178,26 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     }
 
     /// <inheritdoc/>
-    public Task ForbidAsync(AuthenticationProperties properties)
+    public Task ForbidAsync(AuthenticationProperties? properties)
     {
+        if (_httpCtx.HttpContext == null)
+        {
+            throw new InvalidOperationException("Http context not found");
+        }
+
         HttpContext context = _httpCtx.HttpContext;
         _log.LogInformation("Forbid: forbidden.");
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
         return Task.CompletedTask;
     }
 
-    private bool JwtTokenFound(out string token)
+    private bool JwtTokenFound(out string? token)
     {
+        if (_httpCtx.HttpContext == null)
+        {
+            throw new InvalidOperationException("Http context not found");
+        }
+
         bool tokenFound = false;
         token = null;
 
@@ -200,7 +219,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
         return tokenFound;
     }
 
-    private async Task<JwtSecurityToken> ValidateTokenAsync(string token, CancellationToken cancellationToken)
+    private async Task<JwtSecurityToken?> ValidateTokenAsync(string token, CancellationToken cancellationToken)
     {
         JwtSecurityTokenHandler jwtHandler = new JwtSecurityTokenHandler();
 

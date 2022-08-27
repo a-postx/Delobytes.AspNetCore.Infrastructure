@@ -8,9 +8,9 @@ public class AppMetadata
     /// <summary>
     /// Идентификатор арендатора.
     /// </summary>
-    public string Tid { get; set; }
+    public string? Tid { get; set; }
     /// <summary>
     /// Тип доступа пользователя к арендатору.
     /// </summary>
-    public string TenantAccessType { get; set; }
+    public string? TenantAccessType { get; set; }
 }

@@ -105,7 +105,7 @@ public static class AuthenticationServiceCollectionExtensions
     {
         services.AddSingleton<IConfigurationManager<OpenIdConnectConfiguration>>(provider =>
         {
-            AuthenticationOptions authOptions = provider.GetService<IOptions<AuthenticationOptions>>().Value;
+            AuthenticationOptions authOptions = provider.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
 
             return new ConfigurationManager<OpenIdConnectConfiguration>(
                 authOptions.OpenIdConfigurationEndpoint,
