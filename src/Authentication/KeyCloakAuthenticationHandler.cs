@@ -280,7 +280,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
 
     private async Task<TokenValidationParameters> GetValidationParametersAsync(CancellationToken cancellationToken)
     {
-        //значение кешировано большую часть времени, поэтому проблемы производительности быть не должно
+        //конфигурация кеширована большую часть времени, поэтому нет проблемы производительности
         OpenIdConnectConfiguration discoveryDocument = await _configManager.GetConfigurationAsync(cancellationToken);
         ICollection<SecurityKey> signingKeys = discoveryDocument.SigningKeys;
 
