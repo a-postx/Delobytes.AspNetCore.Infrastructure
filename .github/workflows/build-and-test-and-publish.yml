@@ -75,7 +75,7 @@ jobs:
     name: 'Push GitHub Package'
     needs: [build, check-tag]
     if: success()
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - name: 'Download Artefact'
       uses: actions/download-artifact@v3.0.0
@@ -83,15 +83,13 @@ jobs:
         name: 'ubuntu-latest'
     - name: 'Dotnet NuGet Add Source'
       run: dotnet nuget add source https://nuget.pkg.github.com/Delobytes.AspNetCore.Infrastructure/index.json --name GitHub --username a-postx --password ${{secrets.GITHUB_TOKEN}}
-      shell: pwsh
     - name: 'Dotnet NuGet Push'
-      run: dotnet nuget push .\*.nupkg --api-key ${{ github.token }} --source GitHub --skip-duplicate
-      shell: pwsh
+      run: dotnet nuget push *.nupkg --source GitHub --skip-duplicate --api-key ${{ github.token }}
 
   push-nuget-packages:
     name: 'Push NuGet Package'
     needs: [build, check-tag]
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
     - name: 'Download Artefact'
       uses: actions/download-artifact@v3.0.0
@@ -99,7 +97,4 @@ jobs:
         name: 'ubuntu-latest'
     - name: 'Dotnet NuGet Push'
       run: |
-        Get-ChildItem . -Filter *.nupkg |
-        Where-Object { !$_.Name.Contains('preview') } |
-        ForEach-Object { dotnet nuget push $_ --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key ${{secrets.NUGET_API_KEY}} }
-      shell: pwsh
+        dotnet nuget push *.nupkg --skip-duplicate --source https://api.nuget.org/v3/index.json --api-key ${{secrets.NUGET_API_KEY}}
