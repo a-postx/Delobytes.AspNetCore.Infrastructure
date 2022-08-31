@@ -81,10 +81,9 @@ jobs:
       uses: actions/download-artifact@v3.0.0
       with:
         name: 'ubuntu-latest'
-    - name: 'Dotnet NuGet Add Source'
-      run: dotnet nuget add source https://nuget.pkg.github.com/Delobytes.AspNetCore.Infrastructure/index.json --name GitHub --username a-postx --password ${{secrets.GITHUB_TOKEN}}
     - name: 'Dotnet NuGet Push'
-      run: dotnet nuget push *.nupkg --source GitHub --skip-duplicate --api-key ${{ github.token }}
+      run: |
+        dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/Delobytes.AspNetCore.Infrastructure/index.json --skip-duplicate --api-key ${{ github.token }}
 
   push-nuget-packages:
     name: 'Push NuGet Package'
