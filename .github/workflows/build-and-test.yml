@@ -41,12 +41,12 @@ jobs:
     - name: 'Build'
       run: dotnet build --configuration Release --no-restore
     - name: 'Test'
-      run: dotnet test --no-restore --verbosity normal --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+      run: dotnet test --no-restore --verbosity normal --logger trx --results-directory "TestResults-${{ matrix.os }}"
     - name: 'Upload test results'
       if: always()
       uses: actions/upload-artifact@v3.0.0
       with:
-        name: dotnet-results-${{ matrix.dotnet-version }}
-        path: TestResults-${{ matrix.dotnet-version }}
+        name: dotnet-results-${{ matrix.os }}
+        path: TestResults-${{ matrix.os }}
         if-no-files-found: error
         retention-days: 3
