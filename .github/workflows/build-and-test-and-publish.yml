@@ -48,7 +48,7 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
     - name: 'Pack'
       run: dotnet pack --no-build --configuration Release src/Delobytes.AspNetCore.Infrastructure.csproj --output distr
-    - name: "Publish Artefacts"
+    - name: 'Upload package'
       uses: actions/upload-artifact@v3.0.0
       with:
         name: ${{matrix.os}}
@@ -57,7 +57,7 @@ jobs:
         retention-days: 1
 
   check-tag:
-    name: "Check tag"
+    name: 'Check tag'
     runs-on: ubuntu-latest
     outputs:
       tagName: ${{ steps.tagName.outputs.tag }}
@@ -71,7 +71,7 @@ jobs:
       if: ${{ steps.tag.outputs.tag == '' }}
       run: exit 1
 
-  push-github-packages:
+  push-github-package:
     name: 'Push GitHub Package'
     needs: [build, check-tag]
     if: success()
@@ -85,7 +85,7 @@ jobs:
       run: |
         dotnet nuget push *.nupkg --source https://nuget.pkg.github.com/Delobytes.AspNetCore.Infrastructure/index.json --skip-duplicate --api-key ${{ github.token }}
 
-  push-nuget-packages:
+  push-nuget-package:
     name: 'Push NuGet Package'
     needs: [build, check-tag]
     runs-on: ubuntu-latest
