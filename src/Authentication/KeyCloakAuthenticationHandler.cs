@@ -56,7 +56,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
         }
         else
         {
-            throw new InvalidOperationException();
+            throw new InvalidOperationException("Authentication scheme or headers are not found");
         }
 
         return Task.CompletedTask;
@@ -65,10 +65,7 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
     /// <inheritdoc/>
     public async Task<AuthenticateResult> AuthenticateAsync()
     {
-        if (!TryGetJwtToken(out string? token))
-        {
-            return AuthenticateResult.Fail("Security token is not found");
-        }
+        string? token = GetJwtToken();
 
         if (token == null)
         {
@@ -191,32 +188,29 @@ public class KeyCloakAuthenticationHandler : IAuthenticationHandler
         return Task.CompletedTask;
     }
 
-    private bool TryGetJwtToken(out string? token)
+    private string? GetJwtToken()
     {
         if (_httpCtx.HttpContext == null)
         {
             throw new InvalidOperationException("Http context not found");
         }
 
-        bool tokenFound = false;
-        token = null;
+        string? token = null;
 
         if (_headers.Headers.TryGetValue(HeaderNames.Authorization, out StringValues authHeaders) && authHeaders.Any())
         {
             string tokenHeaderValue = authHeaders.ElementAt(0);
             token = tokenHeaderValue.StartsWith(_authOptions.AuthType + " ", StringComparison.OrdinalIgnoreCase)
                 ? tokenHeaderValue[7..] : tokenHeaderValue;
-            tokenFound = true;
         }
         //проблема безопасности
         //запросы на загрузку файлов идут через window.open, поэтому ключ посылается в параметрах
         else if (_httpCtx.HttpContext.Request.Query.TryGetValue("at", out StringValues accessToken))
         {
             token = accessToken.ToString();
-            tokenFound = true;
         }
 
-        return tokenFound;
+        return token;
     }
 
     private async Task<JwtSecurityToken?> ValidateTokenAsync(string token, CancellationToken cancellationToken)
